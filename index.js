@@ -1,7 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
-require("dotenv").config();
 const app = express();
+app.use(express.json());
+app.use(require("cors")());
+const dotenv = require("dotenv");
+dotenv.config();
 
 const dbUrl = process.env.MONGODB_URI;
 mongoose.connect(dbUrl, {
@@ -18,6 +21,8 @@ db.once("open", function () {
 app.get("/", (req, res) => {
   res.send("Hello, Docker with MongoDB sajit!");
 });
+
+app.use(require("./index.routes"));
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
