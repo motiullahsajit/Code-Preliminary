@@ -61,6 +61,8 @@ exports.searchBooks = async (req, res) => {
     const { title, author, genre } = req.query;
     const { sort = "id", order = "ASC" } = req.query;
 
+    console.log("query", req.query);
+
     const query = {};
     if (title) query.title = title;
     if (author) query.author = author;
@@ -72,9 +74,14 @@ exports.searchBooks = async (req, res) => {
       sortBy = "id";
     }
 
-    const books = await Book.find(query).sort({ [sortBy]: sortOrder, id: 1 });
+    console.log("sort by: " + sortBy);
+    console.log("sort order: " + sortOrder);
 
-    res.json(books);
+    const books = await Book.find(query)
+      .select("-_id -__v")
+      .sort({ [sortBy]: sortOrder });
+
+    res.status(200).json({ books });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
