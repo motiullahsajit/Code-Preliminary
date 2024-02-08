@@ -20,18 +20,9 @@ const adminOnly = async (req, res, next) => {
         });
       }
 
-      const { userId } = decodedToken;
+      const { userRole } = decodedToken;
 
-      const user = await User.findById(userId);
-
-      if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: "User doesn't exist",
-        });
-      }
-
-      if (user.role !== "admin") {
+      if (userRole !== "admin") {
         return res.status(403).json({
           success: false,
           message: "Access denied",
