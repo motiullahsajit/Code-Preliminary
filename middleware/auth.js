@@ -1,32 +1,48 @@
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 
 const adminOnly = async (req, res, next) => {
   try {
-    const { id } = req.query;
+    const token = req.headers.authorization;
 
-    if (!id)
+    if (!token) {
       return res.status(401).json({
         success: false,
-        message: "First login Please",
+        message: "Token not provided",
       });
+    }
 
-    const user = await User.findById(id);
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
+      if (err) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid token",
+        });
+      }
 
-    if (!user)
-      return res.status(401).json({
-        success: false,
-        message: "User doesn't exits",
-      });
+      const { userId } = decodedToken;
 
-    if (user.role !== "admin")
-      return res.status(403).json({
-        success: false,
-        message: "Access denied",
-      });
+      const user = await User.findById(userId);
 
-    next();
-  } catch (e) {
-    console.log("auth", e);
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "User doesn't exist",
+        });
+      }
+
+      if (user.role !== "admin") {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied",
+        });
+      }
+
+      next();
+    });
+  } catch (error) {
+    console.error("adminOnly", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
