@@ -1,5 +1,5 @@
-docker build -t motiullahsajit/preliminary:0.0.3 .
-docker container run -p 5000:5000 motiullahsajit/preliminary:0.0.3
+docker build --tag=sol:latest .
+docker run -it -p 5000:5000 --rm --name=sol sol:latest
 Group Name: UNTITLED
 Member 1 Email: sajitmotiullah@gmail.com
 Member 2 Email: mrhasan660066@gmail.com
