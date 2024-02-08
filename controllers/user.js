@@ -1,11 +1,11 @@
 const User = require("../models/user");
 
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
   try {
-    const { username, email, password, firstName, lastName, dateOfBirth } =
+    const { id, username, email, password, firstName, lastName, dateOfBirth } =
       req.body;
 
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    const existingUser = await User.findById(id);
     if (existingUser) {
       return res
         .status(400)
@@ -13,6 +13,7 @@ const createUser = async (req, res) => {
     }
 
     const newUser = new User({
+      id,
       username,
       email,
       password,
@@ -32,7 +33,7 @@ const createUser = async (req, res) => {
   }
 };
 
-const getAllUsers = async (req, res) => {
+const getAllUsers = async (req, res, next) => {
   try {
     const users = await User.find();
     res.status(200).json({ users });
