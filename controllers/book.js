@@ -25,7 +25,7 @@ exports.updateBook = async (req, res) => {
     if (!updatedBook) {
       return res
         .status(404)
-        .json({ message: `Book with id: ${bookId} was not found` });
+        .json({ message: `book with id: ${bookId} was not found` });
     }
 
     const { _id, __v, ...updatedBookInfo } = updatedBook.toObject();
@@ -45,7 +45,7 @@ exports.getBookById = async (req, res) => {
     if (!book) {
       return res
         .status(404)
-        .json({ message: `Book with id: ${bookId} was not found` });
+        .json({ message: `book with id: ${bookId} was not found` });
     }
 
     const { _id, __v, ...bookInfo } = book.toObject();
