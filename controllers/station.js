@@ -112,13 +112,15 @@ const listTrainsAtStation = async (req, res) => {
           return arrivalTimeComparison;
         }
       }
+
       return a.train_id - b.train_id;
     });
 
     const response = {
       station_id: stationId,
       trains: trains.map((train) => {
-        const stop = train.stops.find((stop) => stop.station_id === stationId);
+        const stop = train.stops.find((stop) => stop.station_id == stationId);
+
         return {
           train_id: train.train_id,
           arrival_time: stop ? stop.arrival_time : null,
