@@ -16,7 +16,7 @@ const createTrain = async (req, res) => {
             typeof stop.arrival_time !== "string") ||
           (stop.departure_time !== null &&
             typeof stop.departure_time !== "string") ||
-          !Number.isInteger(stop.fare)
+          !Number.isFinite(stop.fare)
       )
     ) {
       return res.status(400).json({ message: "Invalid data types" });
