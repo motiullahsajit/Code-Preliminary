@@ -1,33 +1,30 @@
 const User = require("../models/user");
 const Train = require("../models/train");
-const Station = require("../models/station");
 
 const purchaseTicket = async (req, res) => {
   try {
     const { wallet_id, time_after, station_from, station_to } = req.body;
 
-    // Find user by wallet ID
     const user = await User.findOne({ user_id: wallet_id });
 
-    // If user not found, return 404 error
     if (!user) {
       return res
         .status(404)
         .json({ message: `wallet with id: ${wallet_id} was not found` });
     }
 
-    // Check if user has sufficient balance
+    const route = await findRoute(station_from, station_to, time_after);
+    if (!route) {
+      return res.status(403).json({
+        message: `no ticket available for station: ${station_from} to station: ${station_to}`,
+      });
+    }
+
     const ticketCost = await calculateTicketCost(station_from, station_to);
     if (user.balance < ticketCost) {
       const shortageAmount = ticketCost - user.balance;
       return res.status(402).json({
         message: `recharge amount: ${shortageAmount} to purchase the ticket`,
-      });
-    }
-    const route = await findRoute(station_from, station_to, time_after);
-    if (!route) {
-      return res.status(403).json({
-        message: `no ticket available for station: ${station_from} to station: ${station_to}`,
       });
     }
 
@@ -60,9 +57,9 @@ const calculateTicketCost = async (station_from, station_to) => {
     });
 
     if (!train) {
-      return res.status(403).json({
-        message: `no ticket available for station: ${station_from} to station: ${station_to}`,
-      });
+      throw new Error(
+        `No train available for the journey from station ${station_from} to station ${station_to}`
+      );
     }
 
     const startStop = train.stops.find(
@@ -71,9 +68,9 @@ const calculateTicketCost = async (station_from, station_to) => {
     const endStop = train.stops.find((stop) => stop.station_id === station_to);
 
     if (!startStop || !endStop) {
-      return res.status(403).json({
-        message: `no ticket available for station: ${station_from} to station: ${station_to}`,
-      });
+      throw new Error(
+        `No stop found for station ${station_from} or ${station_to}`
+      );
     }
 
     let totalFare = 0;
@@ -101,9 +98,7 @@ const findRoute = async (station_from, station_to, time_after) => {
     });
 
     if (!train) {
-      return res.status(403).json({
-        message: `no ticket available for station: ${station_from} to station: ${station_to}`,
-      });
+      return null;
     }
 
     const startIndex = train.stops.findIndex(
@@ -114,9 +109,7 @@ const findRoute = async (station_from, station_to, time_after) => {
     );
 
     if (startIndex === -1 || endIndex === -1) {
-      return res.status(403).json({
-        message: `no ticket available for station: ${station_from} to station: ${station_to}`,
-      });
+      return null;
     }
 
     const route = train.stops
