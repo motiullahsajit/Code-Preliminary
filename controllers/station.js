@@ -69,6 +69,18 @@ const listTrainsAtStation = async (req, res) => {
       const aStop = a.stops.find((stop) => stop.station_id === stationId);
       const bStop = b.stops.find((stop) => stop.station_id === stationId);
 
+      if (!aStop && !bStop) {
+        return 0;
+      }
+
+      if (!aStop) {
+        return 1;
+      }
+
+      if (!bStop) {
+        return -1;
+      }
+
       if (aStop.departure_time === null && bStop.departure_time !== null) {
         return -1;
       } else if (
