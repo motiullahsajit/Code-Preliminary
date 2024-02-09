@@ -4,20 +4,20 @@ const createStation = async (req, res) => {
   try {
     const { station_id, station_name, longitude, latitude } = req.body;
 
+    const stationIdInt = parseInt(station_id);
+
     if (
-      Number.isInteger(station_id) === false ||
+      isNaN(stationIdInt) ||
       typeof longitude !== "number" ||
       typeof latitude !== "number"
     ) {
-      return res
-        .status(400)
-        .json({
-          message: "Invalid data types for station_id, longitude, or latitude",
-        });
+      return res.status(400).json({
+        message: "Invalid data types for station_id, longitude, or latitude",
+      });
     }
 
     const newStation = new Station({
-      station_id,
+      station_id: stationIdInt,
       station_name,
       longitude,
       latitude,
