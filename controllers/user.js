@@ -19,6 +19,8 @@ const createUser = async (req, res) => {
       balance: balanceInt,
     });
 
+    await newUser.save();
+
     const { _id, __v, ...user } = newUser.toObject();
 
     res.status(201).json(user);
