@@ -1,4 +1,5 @@
 const Station = require("../models/station");
+const Train = require("../models/train");
 
 const createStation = async (req, res) => {
   try {
@@ -36,10 +37,8 @@ const createStation = async (req, res) => {
 
 const listAllStations = async (req, res) => {
   try {
-    // Fetch all stations from the database
     const stations = await Station.find().sort({ station_id: 1 });
 
-    // Prepare the response model
     const response = {
       stations: stations.map((station) => ({
         station_id: station.station_id,
@@ -49,10 +48,75 @@ const listAllStations = async (req, res) => {
       })),
     };
 
-    // Respond with the list of stations and status 200
     res.status(200).json(response);
   } catch (err) {
-    // Handle errors
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const listTrainsAtStation = async (req, res) => {
+  try {
+    const stationId = req.params.station_id;
+
+    const trains = await Train.find({ "stops.station_id": stationId });
+
+    if (!trains || trains.length === 0) {
+      return res.status(200).json({ station_id: stationId, trains: [] });
+    }
+
+    trains.sort((a, b) => {
+      const aStop = a.stops.find((stop) => stop.station_id === stationId);
+      const bStop = b.stops.find((stop) => stop.station_id === stationId);
+
+      if (aStop.departure_time === null && bStop.departure_time !== null) {
+        return -1;
+      } else if (
+        aStop.departure_time !== null &&
+        bStop.departure_time === null
+      ) {
+        return 1;
+      } else if (
+        aStop.departure_time !== null &&
+        bStop.departure_time !== null
+      ) {
+        const departureTimeComparison = aStop.departure_time.localeCompare(
+          bStop.departure_time
+        );
+        if (departureTimeComparison !== 0) {
+          return departureTimeComparison;
+        }
+      }
+
+      if (aStop.arrival_time === null && bStop.arrival_time !== null) {
+        return -1;
+      } else if (aStop.arrival_time !== null && bStop.arrival_time === null) {
+        return 1;
+      } else if (aStop.arrival_time !== null && bStop.arrival_time !== null) {
+        const arrivalTimeComparison = aStop.arrival_time.localeCompare(
+          bStop.arrival_time
+        );
+        if (arrivalTimeComparison !== 0) {
+          return arrivalTimeComparison;
+        }
+      }
+      return a.train_id - b.train_id;
+    });
+
+    const response = {
+      station_id: stationId,
+      trains: trains.map((train) => {
+        const stop = train.stops.find((stop) => stop.station_id === stationId);
+        return {
+          train_id: train.train_id,
+          arrival_time: stop ? stop.arrival_time : null,
+          departure_time: stop ? stop.departure_time : null,
+        };
+      }),
+    };
+
+    res.status(200).json(response);
+  } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -61,4 +125,5 @@ const listAllStations = async (req, res) => {
 module.exports = {
   createStation,
   listAllStations,
+  listTrainsAtStation,
 };
